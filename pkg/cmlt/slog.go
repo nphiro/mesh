@@ -81,9 +81,7 @@ func (h *slogHandler) Handle(ctx context.Context, rec slog.Record) error {
 				event.Extra[attr.Key] = val
 				return true
 			})
-			if exception != nil {
-				event.SetException(exception, 10)
-			}
+			event.SetException(exception, 10)
 			sentryClient.CaptureEvent(event, &sentry.EventHint{Context: ctx, OriginalException: exception}, nil)
 		}
 	}

@@ -17,13 +17,13 @@ import (
 )
 
 var cfg struct {
-	SentryDsn string `env:"SENTRY_DSN"`
+	SentryDsn string `env:"SENTRY_DSN" envDefault:""`
 }
 
 func init() {
 	env.Parse(&cfg)
 
-	cmlt.Setup("example application", cmlt.Config{
+	cmlt.Setup("example application", &cmlt.Config{
 		SentryDsn: cfg.SentryDsn,
 	})
 }
@@ -43,7 +43,7 @@ func main() {
 	span.AddEvent("Starting application", trace.WithAttributes(attribute.String("mode", os.Getenv("ENV"))))
 	err := test()
 	span.SetStatus(codes.Error, "boom")
-	slog.ErrorContext(ctx, "Starting application", slog.String("env", os.Getenv("ENV")), slog.Group("app", slog.Any("error", err)))
+	slog.ErrorContext(ctx, "Starting application", slog.String("env", os.Getenv("ENV")), slog.Group("app", slog.Any("error", err), slog.String("message", "test error"), slog.Int("code", 500)))
 }
 
 func test() error {

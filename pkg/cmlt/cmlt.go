@@ -12,9 +12,13 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
-var shutdownFuncs []shutdownFunc
+var (
+	appTracer     = otel.Tracer("app")
+	shutdownFuncs []shutdownFunc
+)
 
 type shutdownFunc struct {
 	name  string
@@ -31,7 +35,15 @@ type Config struct {
 	Release string
 }
 
-func Setup(serviceName string, config Config) error {
+func defaultConfig() *Config {
+	return &Config{}
+}
+
+func Setup(serviceName string, config *Config) {
+	if config == nil {
+		config = defaultConfig()
+	}
+
 	resources := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceName(serviceName),
@@ -56,10 +68,10 @@ func Setup(serviceName string, config Config) error {
 	tracerProvider := sdktrace.NewTracerProvider(tracerProviderOptions...)
 	addShutdownFunc("tracer provider", tracerProvider.Shutdown)
 
+	appTracer = tracerProvider.Tracer(serviceName)
+
 	otel.SetTracerProvider(tracerProvider)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(textMapPropagators...))
-
-	return nil
 }
 
 func Flush() error {
@@ -71,4 +83,8 @@ func Flush() error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+func AppTracer() trace.Tracer {
+	return appTracer
 }

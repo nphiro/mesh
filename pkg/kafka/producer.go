@@ -12,10 +12,12 @@ import (
 
 func startProducerSpan(ctx context.Context, key string, message *sarama.ProducerMessage) (context.Context, trace.Span) {
 	tracer := otel.Tracer(tracerName)
-	ctx, span := tracer.Start(ctx, produceMessageSpanName, trace.WithSpanKind(trace.SpanKindProducer))
-	span.SetAttributes(
-		attribute.String("kafka.topic", message.Topic),
-		attribute.String("kafka.key", key),
+	ctx, span := tracer.Start(ctx, produceMessageSpanName,
+		trace.WithSpanKind(trace.SpanKindProducer),
+		trace.WithAttributes(
+			attribute.String("kafka.topic", message.Topic),
+			attribute.String("kafka.key", key),
+		),
 	)
 
 	carrier := propagation.MapCarrier{}

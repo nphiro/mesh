@@ -21,12 +21,12 @@ var (
 )
 
 func init() {
-	env := os.Getenv("ENV")
-	validEnvs := []string{"local", "dev", "sit", "uat", "staging", "prod"}
-	if !slices.Contains(validEnvs, env) {
-		slog.Error("Detected invalid ENV value",
-			slog.String("env", env),
-			slog.String("valid_values", strings.Join(validEnvs, ", ")),
+	env := os.Getenv("DEPLOYMENT_ENV")
+	validDeploymentEnvs := []string{"local", "dev", "sit", "uat", "staging", "prod"}
+	if !slices.Contains(validDeploymentEnvs, env) {
+		slog.Error("Detected invalid DEPLOYMENT_ENV value",
+			slog.String("current_value", env),
+			slog.String("valid_values", strings.Join(validDeploymentEnvs, ", ")),
 		)
 		os.Exit(1)
 	}
